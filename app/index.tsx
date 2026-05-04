@@ -19,8 +19,8 @@ export default function Index() {
   }, [user, loading, router]);
 
   return (
-    <View className="flex-1 items-center justify-center bg-background">
-      <ActivityIndicator size="large" />
+    <View className="flex-1 items-center justify-center bg-background" style={{ flex: 1, backgroundColor: '#0E0E1C', alignItems: 'center', justifyContent: 'center' }}>
+      <ActivityIndicator size="large" color="#7B3FF2" />
     </View>
   );
 }
