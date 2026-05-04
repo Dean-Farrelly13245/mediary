@@ -16,6 +16,4 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-        working-directory: source/Mediary
       - run: npm test -- --ci --watchAll=false
-        working-directory: source/Mediary
