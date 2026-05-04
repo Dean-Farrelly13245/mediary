@@ -50,7 +50,7 @@
     },
     "owner": "dean13245",
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "sdkVersion"
     },
     "updates": {
       "url": "https://u.expo.dev/31f5693d-5a25-41f4-a95a-79b70a8135c4"
