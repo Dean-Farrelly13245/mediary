@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-Item \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\mediary-new\\\\assets\\\\icon.png\")",
+      "Bash(Select-Object Length, Name)"
+    ]
+  }
+}
