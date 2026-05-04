@@ -48,7 +48,7 @@ const ListHeader = ({ searchQuery, filter, isLoading, onChangeText, onFilterChan
         />
       </View>
     )}
-    <View style={{ flexDirection: "row", gap: 10, marginBottom: 6, paddingRight: 20 }}>
+    <View style={{ flexDirection: "row", flexWrap: 'wrap', gap: 8, marginBottom: 6, paddingHorizontal: 20 }}>
       {FILTERS.map(({ key, label }) => (
         <Pressable
           key={key}
@@ -250,15 +250,15 @@ const search = () => {
   };
 
   return (
-    <View className="flex-1 mt-5 bg-background">
-      <View className='flex-1 mt-5 ms-5'>
+    <View className="flex-1 bg-background">
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
         {filter === "movie" && (
           <FlatList
             data={movies}
             renderItem={({ item }) => <MovieCard {...item} />}
             keyExtractor={(item) => item.id.toString()}
             numColumns={3}
-            columnWrapperStyle={{ justifyContent: 'center', gap: 16, marginVertical: 16 }}
+            columnWrapperStyle={{ justifyContent: 'center', gap: 8, marginVertical: 12 }}
             contentContainerStyle={{ paddingBottom: 100 }}
             initialNumToRender={9}
             windowSize={7}
@@ -282,7 +282,7 @@ const search = () => {
             renderItem={({ item }) => <TvShowCard {...item} />}
             keyExtractor={(item) => item.id.toString()}
             numColumns={3}
-            columnWrapperStyle={{ justifyContent: 'center', gap: 16, marginVertical: 16 }}
+            columnWrapperStyle={{ justifyContent: 'center', gap: 8, marginVertical: 12 }}
             contentContainerStyle={{ paddingBottom: 100 }}
             initialNumToRender={9}
             windowSize={7}
@@ -387,8 +387,8 @@ const search = () => {
             data={smartResults}
             keyExtractor={(item) => `${item.media_type}-${item.id}`}
             numColumns={3}
-            columnWrapperStyle={{ justifyContent: 'center', gap: 16, marginVertical: 16 }}
-            contentContainerStyle={{ paddingBottom: 100, paddingRight: 16 }}
+            columnWrapperStyle={{ justifyContent: 'center', gap: 8, marginVertical: 12 }}
+            contentContainerStyle={{ paddingBottom: 100 }}
             ListHeaderComponent={
               <View>
                 <ListHeader {...listHeaderProps} />
@@ -465,7 +465,7 @@ const search = () => {
             renderItem={({ item }) => (
               <AppPressable
                 onPress={() => navigateToDetail(item)}
-                style={{ width: 110 }}
+                style={{ width: 100 }}
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${item.title}`}
               >
@@ -473,12 +473,12 @@ const search = () => {
                   {item.poster ? (
                     <Image
                       source={{ uri: item.poster }}
-                      style={{ width: 110, height: 165, borderRadius: 12 }}
+                      style={{ width: 100, height: 150, borderRadius: 12 }}
                       resizeMode="cover"
                     />
                   ) : (
                     <View style={{
-                      width: 110, height: 165, borderRadius: 12,
+                      width: 100, height: 150, borderRadius: 12,
                       backgroundColor: '#1e293b', alignItems: 'center', justifyContent: 'center',
                     }}>
                       <Text style={{ color: '#64748b', fontSize: 10 }}>No image</Text>
@@ -547,3 +547,4 @@ const search = () => {
 }
 
 export default search
+

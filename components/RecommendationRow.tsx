@@ -1,7 +1,10 @@
-import { View, Text, FlatList, Pressable, Animated } from 'react-native';
+import { View, Text, FlatList, Pressable, Animated, Platform } from 'react-native';
 import { useEffect, useRef } from 'react';
 import RecommendationCard from './RecommendationCard';
 import { RecommendationItem } from '@/services/recommendations';
+
+const CARD_WIDTH = Platform.OS === 'web' ? 140 : 130;
+const POSTER_HEIGHT = Platform.OS === 'web' ? 210 : 208;
 
 interface RecommendationRowProps {
   title: string;
@@ -26,8 +29,14 @@ function SkeletonCard() {
 
   return (
     <Animated.View
-      style={{ opacity }}
-      className="w-[130px] h-52 rounded-xl bg-gray-700 mr-3"
+      style={{
+        opacity,
+        width: CARD_WIDTH,
+        height: POSTER_HEIGHT,
+        borderRadius: 12,
+        backgroundColor: '#374151',
+        marginRight: 12,
+      }}
     />
   );
 }
@@ -45,8 +54,8 @@ export default function RecommendationRow({
   return (
     <View className="mb-6">
       <View className="flex-row items-center justify-between px-5 mb-1">
-        <View>
-          <Text className="text-white text-lg font-bold">{title}</Text>
+        <View style={{ flex: 1, marginRight: 8 }}>
+          <Text className="text-white text-lg font-bold" numberOfLines={1}>{title}</Text>
           {subtitle ? (
             <Text className="text-gray-400 text-xs mt-0.5">{subtitle}</Text>
           ) : null}
@@ -71,7 +80,7 @@ export default function RecommendationRow({
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => `${item.external_id}_${item.media_type}`}
           contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}
-          ItemSeparatorComponent={() => <View className="w-3" />}
+          ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
           renderItem={({ item }) => (
             <RecommendationCard item={item} onPress={() => onItemPress(item)} />
           )}

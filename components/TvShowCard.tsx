@@ -1,9 +1,12 @@
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, Platform } from 'react-native'
 import React from 'react'
 import { Link, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons';
 import AppPressable from './AppPressable';
 import { HIT_SLOP_44 } from '@/lib/theme';
+
+const CARD_WIDTH = Platform.OS === 'web' ? 140 : 130;
+const POSTER_HEIGHT = Platform.OS === 'web' ? 210 : 208;
 
 const TvShowCard = ({id, poster_path, name, vote_average, first_air_date}: TVShow) => {
   const router = useRouter();
@@ -11,11 +14,19 @@ const TvShowCard = ({id, poster_path, name, vote_average, first_air_date}: TVSho
 
   return (
     <Link href={`/tvshows/${id}`} asChild>
-        <AppPressable className="w-[130px] mr-2" accessibilityRole="button" accessibilityLabel={`Open ${name}`}>
-            <View>
+        <AppPressable
+          style={{ width: CARD_WIDTH }}
+          accessibilityRole="button"
+          accessibilityLabel={`Open ${name}`}
+        >
+            <View style={{ borderRadius: 12, overflow: 'hidden' }}>
                 <Image
                     source={{ uri: posterUrl }}
-                    className="w-full h-52"
+                    style={{
+                      width: CARD_WIDTH,
+                      height: POSTER_HEIGHT,
+                      borderRadius: 12,
+                    }}
                     resizeMode="cover"
                 />
                 <AppPressable
@@ -49,8 +60,22 @@ const TvShowCard = ({id, poster_path, name, vote_average, first_air_date}: TVSho
                     <Ionicons name="add" size={20} color="white" />
                 </AppPressable>
             </View>
-            <Text className='text-sm font-bold text-white mt-2' numberOfLines={1}>{name}</Text>
-            <Text className='text-sm font-bold text-white mt-2'><Ionicons name="star" size={12} color="#F6B73C" /> {Math.round(vote_average)} {first_air_date?.split('-')[0]}</Text>
+            <Text
+              style={{ color: 'white', fontSize: 13, fontWeight: '700', marginTop: 6, width: CARD_WIDTH }}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {name}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, width: CARD_WIDTH }}>
+              <Ionicons name="star" size={12} color="#F6B73C" />
+              <Text style={{ color: '#ccc', fontSize: 12, marginLeft: 4 }}>
+                {Math.round(vote_average)}
+              </Text>
+              <Text style={{ color: '#777', fontSize: 12, marginLeft: 6 }}>
+                {first_air_date?.split('-')[0]}
+              </Text>
+            </View>
         </AppPressable>
     </Link>
   )

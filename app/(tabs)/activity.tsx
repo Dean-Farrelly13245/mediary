@@ -310,7 +310,7 @@ export default function Activity() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7B3FF2" />
         }
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={
           <View className="px-5 mt-20 mb-5">
             <Text className="text-white font-bold text-3xl">Activity</Text>

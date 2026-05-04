@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Image, Pressable, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RecommendationItem } from '@/services/recommendations';
 
@@ -13,18 +13,21 @@ const badgeColors: Record<string, string> = {
   red: '#ef4444',
 };
 
+const CARD_WIDTH = Platform.OS === 'web' ? 140 : 130;
+const POSTER_HEIGHT = Platform.OS === 'web' ? 210 : 208;
+
 export default function RecommendationCard({ item, onPress }: RecommendationCardProps) {
   const badgeColor = badgeColors[item.match_color] || '#22c55e';
   const displayGenres = (item.genres || []).slice(0, 2);
 
   return (
-    <Pressable onPress={onPress} className="w-[130px] mr-3">
-      <View className="relative w-full h-52 rounded-xl overflow-hidden">
+    <Pressable onPress={onPress} style={{ width: CARD_WIDTH }}>
+      <View style={{ width: CARD_WIDTH, height: POSTER_HEIGHT, borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
         <Image
           source={{
             uri: item.poster_url || 'https://placehold.co/130x208/1a1a1a/ffffff.png',
           }}
-          className="w-full h-full"
+          style={{ width: CARD_WIDTH, height: POSTER_HEIGHT }}
           resizeMode="cover"
         />
 
@@ -43,7 +46,11 @@ export default function RecommendationCard({ item, onPress }: RecommendationCard
         </View>
       </View>
 
-      <Text className="text-white text-sm font-bold mt-2" numberOfLines={1}>
+      <Text
+        style={{ color: 'white', fontSize: 13, fontWeight: '700', marginTop: 6, width: CARD_WIDTH }}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
         {item.title}
       </Text>
 

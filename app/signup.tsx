@@ -2,7 +2,17 @@ import logo from '@/assets/icons/logo.png';
 import { useAuth } from '@/context/AuthContext';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import AppPressable from '@/components/AppPressable';
 import { useToast } from '@/context/ToastContext';
 
@@ -35,20 +45,24 @@ export default function Signup() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-background"
+      style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 }}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View className="w-full flex-row justify-center mt-5 mb-12">
-          <Image source={logo} className="w-56 h-56" resizeMode="contain" />
+        {/* Logo */}
+        <View style={styles.logoWrapper}>
+          <Image source={logo} style={styles.logo} resizeMode="contain" />
         </View>
-        <Text className="text-white text-3xl font-bold mb-6">Create Account</Text>
+
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Start tracking what you love</Text>
 
         <TextInput
-          className="bg-[#1A1B2E] text-white rounded-xl px-4 py-3 mb-4"
+          style={styles.input}
           placeholder="Email"
           placeholderTextColor="#888"
           autoCapitalize="none"
@@ -58,7 +72,7 @@ export default function Signup() {
         />
 
         <TextInput
-          className="bg-[#1A1B2E] text-white rounded-xl px-4 py-3 mb-6"
+          style={styles.input}
           placeholder="Password"
           placeholderTextColor="#888"
           secureTextEntry
@@ -67,24 +81,105 @@ export default function Signup() {
         />
 
         <AppPressable
-          className="bg-[#7B3FF2] rounded-xl py-3 items-center"
+          style={[styles.signUpBtn, loading && styles.signUpBtnDisabled]}
           disabled={loading}
           onPress={handleSignup}
           accessibilityRole="button"
           accessibilityLabel="Sign up"
         >
-          <Text className="text-white font-semibold">
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.signUpText}>Sign Up</Text>
+          )}
         </AppPressable>
 
-        <Text className="text-white text-center mt-5">
-          Already have an account?{' '}
-          <Link href="/login" className="text-[#7B3FF2] font-semibold">
+        <View style={styles.signInRow}>
+          <Text style={styles.signInPrompt}>Already have an account? </Text>
+          <Link href="/login" style={styles.signInLink}>
             Sign In
           </Link>
-        </Text>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+    backgroundColor: '#0E0E1C',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 40,
+  },
+  logoWrapper: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  logo: {
+    width: 200,
+    height: 200,
+  },
+  title: {
+    color: '#ffffff',
+    fontSize: 32,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: '#94a3b8',
+    fontSize: 15,
+    marginBottom: 32,
+  },
+  input: {
+    backgroundColor: '#1A1B2E',
+    color: '#ffffff',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#2d2d45',
+  },
+  signUpBtn: {
+    backgroundColor: '#7B3FF2',
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 20,
+    shadowColor: '#7B3FF2',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  signUpBtnDisabled: {
+    backgroundColor: '#4a2d90',
+  },
+  signUpText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 16,
+    letterSpacing: 0.3,
+  },
+  signInRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  signInPrompt: {
+    color: '#94a3b8',
+    fontSize: 14,
+  },
+  signInLink: {
+    color: '#7B3FF2',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+});

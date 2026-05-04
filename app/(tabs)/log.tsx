@@ -270,9 +270,9 @@ export default function Log() {
   const anyLoading = isLoading || gamesLoading;
 
   return (
-    <View className="flex-1 mt-5 bg-background">
+    <View className="flex-1 bg-background">
       <ScrollView>
-        <View className="flex-1 mt-5 ms-5">
+        <View style={{ flex: 1, paddingHorizontal: 16 }}>
           {/* TMDB */}
           {filter !== "game" && (
             <FlatList
@@ -282,8 +282,8 @@ export default function Log() {
               numColumns={3}
               columnWrapperStyle={{
                 justifyContent: "center",
-                gap: 16,
-                marginVertical: 16,
+                gap: 8,
+                marginVertical: 12,
               }}
               contentContainerStyle={{ paddingBottom: 40 }}
               renderItem={({ item }) => {

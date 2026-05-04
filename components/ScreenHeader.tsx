@@ -70,7 +70,7 @@ export default function ScreenHeader({
   );
 }
 
-const TOP_PAD = Platform.OS === "android" ? (StatusBar.currentHeight ?? 24) + spacing.sm : 52;
+const TOP_PAD = Platform.OS === 'web' ? 20 : Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + spacing.sm : 52;
 
 const styles = StyleSheet.create({
   container: {

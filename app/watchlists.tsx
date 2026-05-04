@@ -95,7 +95,7 @@ export default function WatchlistsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-slate-950" edges={['left', 'right', 'bottom']}>
       <ScreenHeader title="My Watchlists" />
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
         {loading ? (
           <View>
             <SkeletonWatchlistCard />

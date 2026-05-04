@@ -124,6 +124,7 @@ export default function ProfileScreen() {
     }, [user?.id])
   );
 
+  // Poster card with fixed width so it scrolls correctly on web
   const PosterCard = ({ item, onPress, mediaType }: { item: any; onPress?: () => void; mediaType?: string }) => {
     const posterUrl = item.posterUrl || item.poster_url;
     const rating = item.rating;
@@ -131,61 +132,58 @@ export default function ProfileScreen() {
     const title = item.title || 'Untitled';
     const type = mediaType || item.media_type;
 
-    const getBadgeInfo = () => {
-      if (type === 'movie') return { text: 'MOVIE', color: 'bg-blue-600' };
-      if (type === 'tv') return { text: 'TV', color: 'bg-purple-600' };
-      if (type === 'game') return { text: 'GAME', color: 'bg-green-600' };
-      return null;
+    const badgeColors: Record<string, string> = {
+      movie: '#2563eb',
+      tv: '#7c3aed',
+      game: '#16a34a',
     };
-
-    const badgeInfo = getBadgeInfo();
+    const badgeLabels: Record<string, string> = {
+      movie: 'MOVIE',
+      tv: 'TV',
+      game: 'GAME',
+    };
 
     return (
       <AppPressable
         onPress={onPress}
-        className="mr-3 w-36 rounded-2xl overflow-hidden bg-slate-900"
+        style={{ marginRight: 12, width: 130, borderRadius: 16, overflow: 'hidden', backgroundColor: '#0f172a' }}
       >
-        <View className="relative">
+        <View style={{ position: 'relative' }}>
           {posterUrl ? (
             <Image
               source={{ uri: posterUrl }}
-              className="h-44 w-full"
+              style={{ width: 130, height: 176, resizeMode: 'cover' } as any}
               resizeMode="cover"
             />
           ) : (
-            <View className="h-44 w-full items-center justify-center bg-slate-800">
-              <Text className="text-3xl text-slate-500 font-bold">
+            <View style={{ width: 130, height: 176, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1e293b' }}>
+              <Text style={{ fontSize: 32, color: '#64748b', fontWeight: '700' }}>
                 {title.charAt(0)}
               </Text>
             </View>
           )}
 
-          {badgeInfo && (
-            <View className="absolute top-2 right-2">
-              <View className={`${badgeInfo.color} px-2 py-0.5 rounded-md`}>
-                <Text className="text-white text-[10px] font-bold">
-                  {badgeInfo.text}
-                </Text>
-              </View>
+          {badgeColors[type] && (
+            <View style={{ position: 'absolute', top: 8, right: 8, backgroundColor: badgeColors[type], paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+              <Text style={{ color: 'white', fontSize: 9, fontWeight: '700' }}>
+                {badgeLabels[type]}
+              </Text>
             </View>
           )}
         </View>
 
-        <View className="p-2">
-          <Text
-            className="text-sm text-slate-50 font-semibold"
-            numberOfLines={1}
-          >
+        <View style={{ padding: 8 }}>
+          <Text style={{ color: '#f8fafc', fontSize: 13, fontWeight: '600' }} numberOfLines={1}>
             {title}
           </Text>
 
           {rating != null && (
-            <Text className="text-xs text-yellow-400">
+            <Text style={{ color: '#facc15', fontSize: 11 }}>
               {rating} ★
             </Text>
           )}
 
-          <Text className="text-[11px] text-slate-400">
+          <Text style={{ color: '#94a3b8', fontSize: 10 }}>
             {new Date(date).toLocaleDateString()}
           </Text>
         </View>
@@ -195,7 +193,7 @@ export default function ProfileScreen() {
 
   if (!user) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
         <Text className="text-slate-50">Log in to view your profile.</Text>
       </SafeAreaView>
     );
@@ -203,7 +201,7 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1 bg-background">
         <ScrollView contentContainerStyle={{ padding: 16 }}>
           <SkeletonProfileHeader />
           <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
@@ -213,8 +211,8 @@ export default function ProfileScreen() {
           </View>
           <Skeleton height={20} width="40%" style={{ marginTop: 24, marginBottom: 12 }} />
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Skeleton width={140} height={180} borderRadius={16} />
-            <Skeleton width={140} height={180} borderRadius={16} />
+            <Skeleton width={130} height={180} borderRadius={16} />
+            <Skeleton width={130} height={180} borderRadius={16} />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -223,15 +221,15 @@ export default function ProfileScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-slate-950 px-4">
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-4">
         <Text className="text-slate-50 text-center">{error}</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-950">
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+    <SafeAreaView className="flex-1 bg-background">
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
         <View className="mb-4 flex-row justify-end items-center gap-2">
           <AppPressable
             onPress={handleSignOut}

@@ -1,4 +1,4 @@
-import { View, Image, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Image, Text, ScrollView, ActivityIndicator, StyleSheet, Platform } from "react-native";
 import AppPressable from "@/components/AppPressable";
 import React from "react";
 import { useLocalSearchParams, router } from "expo-router";
@@ -45,6 +45,18 @@ const GameDetails = () => {
 
   return (
     <View className="bg-background flex-1">
+      {/* ===== Floating Back Button ===== */}
+      <AppPressable
+        onPress={() => router.back()}
+        className="absolute left-4 bg-black/60 rounded-full p-2 border border-white/10"
+        hitSlop={16}
+        style={[styles.floatingBackButton, { top: Platform.OS === 'web' ? 24 : 54 }]}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </AppPressable>
+
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         {/* ===== Banner ===== */}
         <View className="relative w-full h-[320px]">
@@ -67,15 +79,6 @@ const GameDetails = () => {
             className="absolute bottom-0 left-0 right-0 h-[160px]"
             pointerEvents="none"
           />
-
-          <AppPressable
-            onPress={() => router.back()}
-            className="absolute top-12 left-5 bg-black/50 rounded-full p-2"
-            hitSlop={12}
-            style={styles.floatingBackButton}
-          >
-            <Ionicons name="chevron-back" size={26} color="white" />
-          </AppPressable>
         </View>
 
         {/* ===== Game Info Section ===== */}
@@ -145,9 +148,8 @@ const GameDetails = () => {
           <Text className="text-white text-base">{publishers}</Text>
 
           <Text className="text-xs text-gray-500 mt-2">
-                          Video game data provided by RAWG.io
+            Video game data provided by RAWG.io
           </Text>
-
         </View>
 
         <AppPressable
@@ -168,8 +170,8 @@ const GameDetails = () => {
 
 const styles = StyleSheet.create({
   floatingBackButton: {
-    zIndex: 20,
-    elevation: 20,
+    zIndex: 100,
+    elevation: 100,
   },
   bottomBackButton: {
     zIndex: 20,

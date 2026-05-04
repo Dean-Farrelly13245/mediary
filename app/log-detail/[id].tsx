@@ -136,7 +136,6 @@ export default function LogDetailsScreen() {
         return;
       }
 
-      // First get the activity event to find the log details
       const { data: activity, error: activityError } = await supabase
         .from("activity_events")
         .select("*")
@@ -147,13 +146,11 @@ export default function LogDetailsScreen() {
         throw new Error("Log not found");
       }
 
-      // Determine which user owns the log
       const logOwnerId =
         activity.type === "log"
           ? activity.user_id
           : activity.target_user_id || activity.user_id;
 
-      // Now find the corresponding media_log
       const { data: mediaLogs, error: logError } = await supabase
         .from("media_logs")
         .select("*")
@@ -162,24 +159,13 @@ export default function LogDetailsScreen() {
         .eq("tmdb_id", parseInt(activity.media_id))
         .order("created_at", { ascending: false });
 
-      console.log("Looking for media log with:", {
-        user_id: logOwnerId,
-        media_type: activity.media_type,
-        tmdb_id: parseInt(activity.media_id),
-        found_logs: mediaLogs?.length || 0
-      });
-
       if (logError) {
-        console.error("Media log query error:", logError);
         throw new Error(`Database error: ${logError.message}`);
       }
 
       if (!mediaLogs || mediaLogs.length === 0) {
-        console.error("No media logs found for activity:", activity);
-        // For now, create a fake log entry from activity data
-        // This allows the UI to work even if the join fails
         const fakeLog = {
-          id: -1, // Invalid ID to prevent likes/comments
+          id: -1,
           user_id: logOwnerId,
           tmdb_id: parseInt(activity.media_id),
           media_type: activity.media_type as "movie" | "tv" | "game",
@@ -189,16 +175,12 @@ export default function LogDetailsScreen() {
           note: activity.review,
           logged_at: activity.created_at,
         };
-        console.log("Using fake log from activity data:", fakeLog);
         setLog(fakeLog);
         return;
       }
 
-      // Use the most recent log
       const mediaLog = mediaLogs[0];
-      console.log("Using media log:", { id: mediaLog.id, user_id: mediaLog.user_id, title: mediaLog.title });
 
-      // Get user profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("username, display_name, avatar_url")
@@ -265,12 +247,10 @@ export default function LogDetailsScreen() {
 
     try {
       setPostingComment(true);
-      console.log("Adding comment:", { logId: log.id, userId: user.id, text: commentText });
       const newComment = await addComment(log.id, user.id, commentText);
       setComments(prev => [newComment, ...prev]);
       setCommentText("");
     } catch (err: any) {
-      console.error("Comment error:", err);
       Alert.alert("Error", err?.message || "Failed to post comment");
     } finally {
       setPostingComment(false);
@@ -414,7 +394,7 @@ export default function LogDetailsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-slate-950">
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header */}
         <View className="px-5 pt-5 pb-3 border-b border-slate-800">
           <AppPressable

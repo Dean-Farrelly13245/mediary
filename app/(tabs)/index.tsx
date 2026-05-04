@@ -3,7 +3,7 @@ import { fetchTrendingGames } from "@/services/rawg";
 import { getCachedRecommendations, triggerRecommendationRefresh, RecommendationItem } from "@/services/recommendations";
 import { recEvents } from "@/services/recEvents";
 import useFetch from "@/services/useFetch";
-import { Text, View, ActivityIndicator, FlatList, Image, Pressable } from "react-native";
+import { Text, View, ActivityIndicator, FlatList, Image, Pressable, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
@@ -12,6 +12,9 @@ import TvShowCard from "@/components/TvShowCard";
 import RecommendationRow from "@/components/RecommendationRow";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/services/supabase";
+
+const GAME_CARD_WIDTH = Platform.OS === 'web' ? 140 : 120;
+const GAME_POSTER_HEIGHT = Platform.OS === 'web' ? 210 : 170;
 
 const SECTIONS = [
   'header',
@@ -218,11 +221,11 @@ export default function Index() {
             className="mt-2"
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <Pressable onPress={() => router.push(`/games/${item.id}`)} style={{ width: 120 }}>
-                <View style={{ position: 'relative' }}>
+              <Pressable onPress={() => router.push(`/games/${item.id}`)} style={{ width: GAME_CARD_WIDTH }}>
+                <View style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
                   <Image
                     source={{ uri: item.background_image }}
-                    style={{ width: 120, height: 170, borderRadius: 12 }}
+                    style={{ width: GAME_CARD_WIDTH, height: GAME_POSTER_HEIGHT, borderRadius: 12 }}
                   />
                   <Pressable
                     onPress={(e) => {
@@ -252,10 +255,10 @@ export default function Index() {
                     <Ionicons name="add" size={20} color="white" />
                   </Pressable>
                 </View>
-                <Text numberOfLines={2} style={{ color: "white", fontWeight: "700", marginTop: 6 }}>
+                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: "white", fontWeight: "700", fontSize: 13, marginTop: 6, width: GAME_CARD_WIDTH }}>
                   {item.name}
                 </Text>
-                <Text style={{ color: "#aaa", fontSize: 12 }}>
+                <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>
                   {item.released ? item.released : "Unknown"}
                 </Text>
               </Pressable>
@@ -297,7 +300,7 @@ export default function Index() {
         keyExtractor={(item) => item}
         renderItem={renderSection}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: Platform.OS === 'web' ? 100 : 20 }}
       />
     </View>
   );

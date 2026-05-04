@@ -1,4 +1,4 @@
-import { View, Image, Text, ScrollView, ActivityIndicator, Modal, Pressable, StyleSheet } from 'react-native';
+import { View, Image, Text, ScrollView, ActivityIndicator, Modal, Pressable, StyleSheet, Platform } from 'react-native';
 import AppPressable from '@/components/AppPressable';
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -66,9 +66,21 @@ const MovieDetails = () => {
 
   return (
     <View className="bg-background flex-1">
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* ===== Floating Back Button ===== */}
+      <AppPressable
+        onPress={() => router.back()}
+        className="absolute left-4 bg-black/60 rounded-full p-2 border border-white/10"
+        hitSlop={16}
+        style={[styles.floatingBackButton, { top: Platform.OS === 'web' ? 24 : 54 }]}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </AppPressable>
+
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         {/* ===== Hero Backdrop ===== */}
-        <View className="relative w-full h-[280px]">
+        <View style={{ position: 'relative', width: '100%', height: 280, overflow: 'hidden' }}>
           <Image
             source={{
               uri: movie?.backdrop_path
@@ -83,14 +95,6 @@ const MovieDetails = () => {
             className="absolute bottom-0 left-0 right-0 h-[160px]"
             pointerEvents="none"
           />
-          <AppPressable
-            onPress={() => router.back()}
-            className="absolute top-12 left-5 bg-black/50 rounded-full p-2"
-            hitSlop={12}
-            style={styles.floatingBackButton}
-          >
-            <Ionicons name="chevron-back" size={26} color="white" />
-          </AppPressable>
         </View>
 
         {/* ===== Poster + Title Row ===== */}
@@ -301,7 +305,6 @@ const MovieDetails = () => {
 
                 {/* Known For / Filmography */}
                 {selectedPerson.combined_credits && (() => {
-                  // Merge cast + crew, deduplicate by id, sort by popularity
                   const allCredits = [
                     ...(selectedPerson.combined_credits.cast || []),
                     ...(selectedPerson.combined_credits.crew || []).filter((c) => c.job === 'Director'),
@@ -371,8 +374,8 @@ const InfoRow = ({ label, value, tappable }) => (
 
 const styles = StyleSheet.create({
   floatingBackButton: {
-    zIndex: 20,
-    elevation: 20,
+    zIndex: 100,
+    elevation: 100,
   },
   personModalOverlay: {
     flex: 1,
