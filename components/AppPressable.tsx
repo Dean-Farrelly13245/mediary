@@ -1,6 +1,7 @@
 import React, { useCallback, useRef } from "react";
 import {
   Animated,
+  Platform,
   Pressable,
   PressableProps,
   StyleProp,
@@ -27,6 +28,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  *   - subtle scale-down on press
  *   - opacity fade
  *   - android_ripple
+ *   - cursor: pointer on web
  *
  * Drop-in replacement for TouchableOpacity.
  */
@@ -98,6 +100,12 @@ function AppPressableInner(
     [disabled, scale, opacity, onPressOut]
   );
 
+  // Web: add cursor pointer and transition
+  const webStyles: any = Platform.OS === 'web' ? {
+    cursor: disabled ? 'default' : 'pointer',
+    transition: 'opacity 0.15s ease',
+  } : {};
+
   return (
     <AnimatedPressable
       ref={ref}
@@ -105,7 +113,7 @@ function AppPressableInner(
       onPressOut={handlePressOut}
       android_ripple={disableRipple ? undefined : android_ripple ?? ANDROID_RIPPLE}
       disabled={disabled}
-      style={[style, { transform: [{ scale }], opacity }]}
+      style={[style, { transform: [{ scale }], opacity }, webStyles]}
       {...rest}
     >
       {children}

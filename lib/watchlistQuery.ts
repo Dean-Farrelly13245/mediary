@@ -1,7 +1,17 @@
 import { TMDB_CONFIG } from '@/services/api';
 import { RAWG_CONFIG } from '@/services/rawg';
 import { TMDB_MOVIE_GENRES, TMDB_TV_GENRES, RAWG_GENRE_SLUGS } from './genreMaps';
-import type { ParsedWatchlistPrompt } from './gemini';
+
+export type ParsedWatchlistPrompt = {
+  type: 'movie' | 'tv' | 'game';
+  genres: string[];
+  year_from: number | null;
+  year_to: number | null;
+  rating_min: number | null;
+  count: number;
+  suggested_name: string;
+  keyword: string | null;
+};
 
 const RAWG_EXTRA_SLUGS: Record<string, string> = {
   'board games': 'board-games', educational: 'educational',
@@ -104,7 +114,6 @@ function resolveTmdbGenres(genres: string[], type: 'movie' | 'tv'): number[] {
     if (id) {
       ids.push(id);
     }
-    // Unknown genres are silently skipped — TMDB has no fuzzy match
   }
   return ids;
 }
@@ -153,7 +162,6 @@ function resolveRawgGenres(genres: string[]): string[] {
 async function fetchTmdbItems(filters: ParsedWatchlistPrompt): Promise<WatchlistItem[]> {
   const genreIds = resolveTmdbGenres(filters.genres, filters.type);
 
-  // Auth via Bearer header (consistent with rest of api.ts)
   const params = new URLSearchParams({
     sort_by: 'popularity.desc',
     page: '1',

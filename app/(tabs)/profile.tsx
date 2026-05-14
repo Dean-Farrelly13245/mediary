@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useCallback } from 'react';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,6 +9,8 @@ import { getProfile, getProfileCounts, getRecentActivity, getFollowStats } from 
 import { getMediaLogsByType } from '@/services/mediaLogs';
 import AppPressable from '@/components/AppPressable';
 import { Skeleton, SkeletonProfileHeader } from '@/components/Skeleton';
+import SectionHeader from '@/components/SectionHeader';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -124,7 +126,7 @@ export default function ProfileScreen() {
     }, [user?.id])
   );
 
-  // Poster card with fixed width so it scrolls correctly on web
+  // Poster card component
   const PosterCard = ({ item, onPress, mediaType }: { item: any; onPress?: () => void; mediaType?: string }) => {
     const posterUrl = item.posterUrl || item.poster_url;
     const rating = item.rating;
@@ -133,9 +135,9 @@ export default function ProfileScreen() {
     const type = mediaType || item.media_type;
 
     const badgeColors: Record<string, string> = {
-      movie: '#2563eb',
-      tv: '#7c3aed',
-      game: '#16a34a',
+      movie: colors.movie,
+      tv: colors.tv,
+      game: colors.game,
     };
     const badgeLabels: Record<string, string> = {
       movie: 'MOVIE',
@@ -146,26 +148,26 @@ export default function ProfileScreen() {
     return (
       <AppPressable
         onPress={onPress}
-        style={{ marginRight: 12, width: 130, borderRadius: 16, overflow: 'hidden', backgroundColor: '#0f172a' }}
+        style={[styles.posterCard, shadow.cardLight]}
       >
         <View style={{ position: 'relative' }}>
           {posterUrl ? (
             <Image
               source={{ uri: posterUrl }}
-              style={{ width: 130, height: 176, resizeMode: 'cover' } as any}
+              style={styles.posterImage}
               resizeMode="cover"
             />
           ) : (
-            <View style={{ width: 130, height: 176, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1e293b' }}>
-              <Text style={{ fontSize: 32, color: '#64748b', fontWeight: '700' }}>
+            <View style={[styles.posterImage, styles.posterPlaceholder]}>
+              <Text style={{ fontSize: 32, color: colors.textFaint, fontWeight: '700' }}>
                 {title.charAt(0)}
               </Text>
             </View>
           )}
 
           {badgeColors[type] && (
-            <View style={{ position: 'absolute', top: 8, right: 8, backgroundColor: badgeColors[type], paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-              <Text style={{ color: 'white', fontSize: 9, fontWeight: '700' }}>
+            <View style={[styles.typeBadge, { backgroundColor: badgeColors[type] }]}>
+              <Text style={styles.typeBadgeText}>
                 {badgeLabels[type]}
               </Text>
             </View>
@@ -173,17 +175,20 @@ export default function ProfileScreen() {
         </View>
 
         <View style={{ padding: 8 }}>
-          <Text style={{ color: '#f8fafc', fontSize: 13, fontWeight: '600' }} numberOfLines={1}>
+          <Text style={{ color: colors.text, fontSize: 13, fontWeight: '600' }} numberOfLines={1}>
             {title}
           </Text>
 
           {rating != null && (
-            <Text style={{ color: '#facc15', fontSize: 11 }}>
-              {rating} ★
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2 }}>
+              <Ionicons name="star" size={11} color={colors.accent} />
+              <Text style={{ color: colors.accent, fontSize: 11, fontWeight: '600' }}>
+                {rating}
+              </Text>
+            </View>
           )}
 
-          <Text style={{ color: '#94a3b8', fontSize: 10 }}>
+          <Text style={{ color: colors.textDim, fontSize: 10, marginTop: 2 }}>
             {new Date(date).toLocaleDateString()}
           </Text>
         </View>
@@ -222,7 +227,8 @@ export default function ProfileScreen() {
   if (error) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-background px-4">
-        <Text className="text-slate-50 text-center">{error}</Text>
+        <Ionicons name="alert-circle-outline" size={48} color={colors.textDim} />
+        <Text style={{ color: colors.text, textAlign: 'center', marginTop: 12 }}>{error}</Text>
       </SafeAreaView>
     );
   }
@@ -230,114 +236,119 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
+        {/* Top buttons */}
         <View className="mb-4 flex-row justify-end items-center gap-2">
           <AppPressable
             onPress={handleSignOut}
-            className="rounded-full bg-slate-900 px-3 py-2"
+            style={styles.headerBtn}
           >
-            <Text className="text-slate-200 text-sm font-medium">Sign out</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '500' }}>Sign out</Text>
           </AppPressable>
           <AppPressable
             onPress={() => router.push('/edit-profile')}
-            className="rounded-full bg-slate-900 p-2"
+            style={styles.headerIconBtn}
           >
-            <Ionicons name="settings-outline" size={20} color="#e5e7eb" />
+            <Ionicons name="settings-outline" size={20} color={colors.textSecondary} />
           </AppPressable>
         </View>
 
+        {/* Avatar + Name */}
         <View className="items-center mb-6">
-          {avatarUrl ? (
-            <Image
-              source={{ uri: avatarUrl }}
-              className="h-24 w-24 rounded-full mb-3"
-            />
-          ) : (
-            <View className="h-24 w-24 rounded-full bg-slate-900 items-center justify-center mb-3">
-              <Text className="text-3xl text-slate-100 font-bold">
-                {displayName.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
+          <View style={styles.avatarGlow}>
+            {avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Text style={{ fontSize: 30, color: colors.text, fontWeight: '700' }}>
+                  {displayName.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </View>
 
-          <Text className="text-lg text-slate-50 font-bold">{displayName}</Text>
+          <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700', marginTop: 12 }}>
+            {displayName}
+          </Text>
 
           {bio ? (
-            <Text className="text-sm text-slate-300 text-center mt-2 px-6">
+            <Text style={{ color: colors.textSecondary, fontSize: 14, textAlign: 'center', marginTop: 8, paddingHorizontal: 24 }}>
               {bio}
             </Text>
           ) : (
-            <Text className="text-xs text-slate-500 text-center mt-2 px-6">
-              No bio yet.
-            </Text>
+            <AppPressable onPress={() => router.push('/edit-profile')} style={{ marginTop: 8 }}>
+              <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '500' }}>
+                Add a bio →
+              </Text>
+            </AppPressable>
           )}
 
-          <View className="flex-row gap-6 mt-4">
+          {/* Follow counts */}
+          <View style={{ flexDirection: 'row', gap: 32, marginTop: 16 }}>
             <AppPressable
               onPress={() => router.push(`/followers/${user.id}`)}
-              className="items-center"
+              style={{ alignItems: 'center' }}
             >
-              <Text className="text-slate-50 font-bold text-base">
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16 }}>
                 {followCountsLoading ? '…' : followCounts.followers}
               </Text>
-              <Text className="text-slate-400 text-xs">Followers</Text>
+              <Text style={{ color: colors.textDim, fontSize: 12 }}>Followers</Text>
             </AppPressable>
 
             <AppPressable
               onPress={() => router.push(`/following/${user.id}`)}
-              className="items-center"
+              style={{ alignItems: 'center' }}
             >
-              <Text className="text-slate-50 font-bold text-base">
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16 }}>
                 {followCountsLoading ? '…' : followCounts.following}
               </Text>
-              <Text className="text-slate-400 text-xs">Following</Text>
+              <Text style={{ color: colors.textDim, fontSize: 12 }}>Following</Text>
             </AppPressable>
           </View>
         </View>
 
-        <View className="flex-row gap-2 mb-6">
-          <View className="flex-1 bg-slate-900 rounded-2xl px-3 py-3 items-center">
-            <Text className="text-xl text-slate-50 font-bold">
-              {counts.moviesLogged}
-            </Text>
-            <Text className="text-xs text-slate-400">MOVIES</Text>
+        {/* Stat Counters */}
+        <View style={styles.statRow}>
+          <View style={styles.statCard}>
+            <Ionicons name="film" size={18} color={colors.movie} style={{ marginBottom: 4 }} />
+            <Text style={styles.statNumber}>{counts.moviesLogged}</Text>
+            <Text style={styles.statLabel}>MOVIES</Text>
           </View>
-
-          <View className="flex-1 bg-slate-900 rounded-2xl px-3 py-3 items-center">
-            <Text className="text-xl text-slate-50 font-bold">
-              {counts.showsLogged}
-            </Text>
-            <Text className="text-xs text-slate-400">SHOWS</Text>
+          <View style={styles.statCard}>
+            <Ionicons name="tv" size={18} color={colors.tv} style={{ marginBottom: 4 }} />
+            <Text style={styles.statNumber}>{counts.showsLogged}</Text>
+            <Text style={styles.statLabel}>SHOWS</Text>
           </View>
-
-          <View className="flex-1 bg-slate-900 rounded-2xl px-3 py-3 items-center">
-            <Text className="text-xl text-slate-50 font-bold">
-              {counts.gamesLogged}
-            </Text>
-            <Text className="text-xs text-slate-400">GAMES</Text>
+          <View style={styles.statCard}>
+            <Ionicons name="game-controller" size={18} color={colors.game} style={{ marginBottom: 4 }} />
+            <Text style={styles.statNumber}>{counts.gamesLogged}</Text>
+            <Text style={styles.statLabel}>GAMES</Text>
           </View>
         </View>
 
+        {/* Watchlists link */}
         <AppPressable
           onPress={() => router.push('/watchlists')}
-          className="bg-slate-900 rounded-2xl px-4 py-3 mb-6 flex-row items-center justify-between"
+          style={styles.watchlistLink}
         >
-          <View className="flex-row items-center gap-3">
-            <Ionicons name="list" size={22} color="#7B3FF2" />
-            <Text className="text-slate-50 font-semibold text-base">Watchlists</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Ionicons name="list" size={22} color={colors.primary} />
+            <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15 }}>Watchlists</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#64748b" />
+          <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
         </AppPressable>
 
-        <View className="flex-row justify-between items-center mb-2">
-          <Text className="text-slate-50 font-bold text-base">Recent Activity</Text>
-        </View>
-
+        {/* Recent Activity */}
+        <SectionHeader title="Recent Activity" />
         {recentActivity.length === 0 ? (
-          <Text className="text-slate-400 text-sm mb-6">
-            Nothing logged yet.
-          </Text>
+          <View style={styles.emptySection}>
+            <Ionicons name="time-outline" size={32} color={colors.textFaint} />
+            <Text style={styles.emptyText}>Nothing logged yet.</Text>
+          </View>
         ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
             {recentActivity.map((item: any) => (
               <PosterCard
                 key={item.id}
@@ -348,79 +359,177 @@ export default function ProfileScreen() {
           </ScrollView>
         )}
 
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-slate-50 font-semibold">Movies</Text>
-            <AppPressable onPress={() => router.push('/movies/logged')}>
-              <Text className="text-primary text-sm">See all</Text>
-            </AppPressable>
-          </View>
+        {/* Movies */}
+        <SectionHeader
+          title="Movies"
+          actionLabel="See all"
+          onAction={() => router.push('/movies/logged')}
+        />
+        {recentMovies.length === 0 ? (
+          <Text style={styles.emptyText}>No movies logged yet</Text>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
+            {recentMovies.map((movie) => (
+              <PosterCard
+                key={movie.id}
+                item={movie}
+                mediaType="movie"
+                onPress={() => router.push(`/log-detail/${movie.id}?source=log`)}
+              />
+            ))}
+          </ScrollView>
+        )}
 
-          {recentMovies.length === 0 ? (
-            <Text className="text-slate-400 text-sm">No movies logged yet</Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {recentMovies.map((movie) => (
-                <PosterCard
-                  key={movie.id}
-                  item={movie}
-                  mediaType="movie"
-                  onPress={() => router.push(`/log-detail/${movie.id}?source=log`)}
-                />
-              ))}
-            </ScrollView>
-          )}
-        </View>
+        {/* TV Shows */}
+        <SectionHeader
+          title="TV Shows"
+          actionLabel="See all"
+          onAction={() => router.push('/tvshows/logged')}
+        />
+        {recentTVShows.length === 0 ? (
+          <Text style={styles.emptyText}>No TV shows logged yet</Text>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
+            {recentTVShows.map((show) => (
+              <PosterCard
+                key={show.id}
+                item={show}
+                mediaType="tv"
+                onPress={() => router.push(`/log-detail/${show.id}?source=log`)}
+              />
+            ))}
+          </ScrollView>
+        )}
 
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-slate-50 font-semibold">TV Shows</Text>
-            <AppPressable onPress={() => router.push('/tvshows/logged')}>
-              <Text className="text-primary text-sm">See all</Text>
-            </AppPressable>
-          </View>
-
-          {recentTVShows.length === 0 ? (
-            <Text className="text-slate-400 text-sm">No TV shows logged yet</Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {recentTVShows.map((show) => (
-                <PosterCard
-                  key={show.id}
-                  item={show}
-                  mediaType="tv"
-                  onPress={() => router.push(`/log-detail/${show.id}?source=log`)}
-                />
-              ))}
-            </ScrollView>
-          )}
-        </View>
-
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-slate-50 font-semibold">Games</Text>
-            <AppPressable onPress={() => router.push('/games/logged')}>
-              <Text className="text-primary text-sm">See all</Text>
-            </AppPressable>
-          </View>
-
-          {recentGames.length === 0 ? (
-            <Text className="text-slate-400 text-sm">No games logged yet</Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {recentGames.map((game) => (
-                <PosterCard
-                  key={game.id}
-                  item={game}
-                  mediaType="game"
-                  onPress={() => router.push(`/log-detail/${game.id}?source=log`)}
-                />
-              ))}
-            </ScrollView>
-          )}
-        </View>
-
+        {/* Games */}
+        <SectionHeader
+          title="Games"
+          actionLabel="See all"
+          onAction={() => router.push('/games/logged')}
+        />
+        {recentGames.length === 0 ? (
+          <Text style={styles.emptyText}>No games logged yet</Text>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
+            {recentGames.map((game) => (
+              <PosterCard
+                key={game.id}
+                item={game}
+                mediaType="game"
+                onPress={() => router.push(`/log-detail/${game.id}?source=log`)}
+              />
+            ))}
+          </ScrollView>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  headerBtn: {
+    borderRadius: radius.full,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  headerIconBtn: {
+    borderRadius: radius.full,
+    backgroundColor: colors.surface,
+    padding: 8,
+  },
+  avatarGlow: {
+    borderRadius: radius.full,
+    padding: 3,
+    borderWidth: 2,
+    borderColor: colors.primaryMuted,
+  },
+  avatar: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+  },
+  avatarPlaceholder: {
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xxl,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  statNumber: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  statLabel: {
+    color: colors.textDim,
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  watchlistLink: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xxl,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  posterCard: {
+    marginRight: 12,
+    width: 130,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
+  },
+  posterImage: {
+    width: 130,
+    height: 176,
+  },
+  posterPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceAlt,
+  },
+  typeBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  typeBadgeText: {
+    color: 'white',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  emptySection: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  emptyText: {
+    color: colors.textDim,
+    fontSize: 14,
+    marginBottom: 16,
+    paddingHorizontal: spacing.xl,
+  },
+});

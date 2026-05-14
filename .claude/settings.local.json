@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(Get-Item \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\mediary-new\\\\assets\\\\icon.png\")",
-      "Bash(Select-Object Length, Name)"
+      "Bash(Select-Object Length, Name)",
+      "Bash(npx expo *)",
+      "Bash(copy *)",
+      "Bash(grep -o \"fontFamily:\\\\`[^\\\\`]*\\\\`\" \"dist/_expo/static/js/web/entry-856e524d7d2f44469099ade0c18c20b7.js\")",
+      "Bash(grep -o '.\\\\{0,100\\\\}fontFamily:\\\\`.\\\\{0,100\\\\}' \"dist/_expo/static/js/web/entry-856e524d7d2f44469099ade0c18c20b7.js\")"
     ]
   }
 }

@@ -1,6 +1,8 @@
-import { View, Text, Image, Pressable, Platform } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import AppPressable from './AppPressable';
 import { RecommendationItem } from '@/services/recommendations';
+import { card, colors, gradients, shadow } from '@/lib/theme';
 
 interface RecommendationCardProps {
   item: RecommendationItem;
@@ -8,31 +10,31 @@ interface RecommendationCardProps {
 }
 
 const badgeColors: Record<string, string> = {
-  green: '#22c55e',
-  amber: '#f59e0b',
-  red: '#ef4444',
+  green: colors.success,
+  amber: colors.warning,
+  red: colors.error,
 };
 
-const CARD_WIDTH = Platform.OS === 'web' ? 140 : 130;
-const POSTER_HEIGHT = Platform.OS === 'web' ? 210 : 208;
-
 export default function RecommendationCard({ item, onPress }: RecommendationCardProps) {
-  const badgeColor = badgeColors[item.match_color] || '#22c55e';
+  const badgeColor = badgeColors[item.match_color] || colors.success;
   const displayGenres = (item.genres || []).slice(0, 2);
 
   return (
-    <Pressable onPress={onPress} style={{ width: CARD_WIDTH }}>
-      <View style={{ width: CARD_WIDTH, height: POSTER_HEIGHT, borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
+    <AppPressable
+      onPress={onPress}
+      style={[{ width: card.width }, shadow.cardLight]}
+    >
+      <View style={{ width: card.width, height: card.posterHeight, borderRadius: 12, overflow: 'hidden', position: 'relative' }}>
         <Image
           source={{
             uri: item.poster_url || 'https://placehold.co/130x208/1a1a1a/ffffff.png',
           }}
-          style={{ width: CARD_WIDTH, height: POSTER_HEIGHT }}
+          style={{ width: card.width, height: card.posterHeight }}
           resizeMode="cover"
         />
 
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.75)']}
+          colors={gradients.cardOverlay}
           className="absolute bottom-0 left-0 right-0 h-16"
         />
 
@@ -47,7 +49,7 @@ export default function RecommendationCard({ item, onPress }: RecommendationCard
       </View>
 
       <Text
-        style={{ color: 'white', fontSize: 13, fontWeight: '700', marginTop: 6, width: CARD_WIDTH }}
+        style={{ color: colors.text, fontSize: 13, fontWeight: '700', marginTop: 6, width: card.width }}
         numberOfLines={1}
         ellipsizeMode="tail"
       >
@@ -61,6 +63,6 @@ export default function RecommendationCard({ item, onPress }: RecommendationCard
           </View>
         ))}
       </View>
-    </Pressable>
+    </AppPressable>
   );
 }

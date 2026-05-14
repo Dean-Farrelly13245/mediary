@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -16,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/services/supabase";
 import { deleteMediaLog, updateMediaLog } from "@/services/mediaLogs";
+import { useToast } from "@/context/ToastContext";
 import {
   getLikeCount,
   isLogLikedByMe,
@@ -65,6 +67,7 @@ export default function LogDetailsScreen() {
   const { id, source } = useLocalSearchParams<{ id: string; source?: string }>();
   const { user } = useAuth();
   const router = useRouter();
+  const toast = useToast();
 
   const [log, setLog] = useState<LogDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -236,7 +239,7 @@ export default function LogDetailsScreen() {
       setIsLiked(newIsLiked);
       setLikeCount(prev => newIsLiked ? prev + 1 : prev - 1);
     } catch (err: any) {
-      Alert.alert("Error", err?.message || "Failed to toggle like");
+      toast.error(err?.message || "Failed to toggle like");
     } finally {
       setLiking(false);
     }
@@ -251,7 +254,7 @@ export default function LogDetailsScreen() {
       setComments(prev => [newComment, ...prev]);
       setCommentText("");
     } catch (err: any) {
-      Alert.alert("Error", err?.message || "Failed to post comment");
+      toast.error(err?.message || "Failed to post comment");
     } finally {
       setPostingComment(false);
     }
@@ -260,48 +263,52 @@ export default function LogDetailsScreen() {
   const handleDeleteComment = async (commentId: string) => {
     if (!user) return;
 
-    Alert.alert("Delete Comment", "Are you sure you want to delete this comment?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteComment(commentId, user.id);
-            setComments(prev => prev.filter(c => c.id !== commentId));
-          } catch (err: any) {
-            Alert.alert("Error", err?.message || "Failed to delete comment");
-          }
-        },
-      },
-    ]);
+    const doDelete = async () => {
+      try {
+        await deleteComment(commentId, user.id);
+        setComments(prev => prev.filter(c => c.id !== commentId));
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to delete comment");
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Delete this comment?')) doDelete();
+    } else {
+      Alert.alert("Delete Comment", "Are you sure you want to delete this comment?", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: doDelete },
+      ]);
+    }
   };
 
   const handleDeleteLog = () => {
     if (!user || !log || log.id <= 0 || log.user_id !== user.id || deletingLog) return;
 
-    Alert.alert("Delete Log", "This will delete your log, likes, and comments on it.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            setDeletingLog(true);
-            await deleteMediaLog(user.id, {
-              id: log.id,
-              tmdb_id: log.tmdb_id,
-              media_type: log.media_type,
-            });
-            router.back();
-          } catch (err: any) {
-            Alert.alert("Error", err?.message || "Failed to delete log");
-          } finally {
-            setDeletingLog(false);
-          }
-        },
-      },
-    ]);
+    const doDelete = async () => {
+      try {
+        setDeletingLog(true);
+        await deleteMediaLog(user.id, {
+          id: log.id,
+          tmdb_id: log.tmdb_id,
+          media_type: log.media_type,
+        });
+        router.back();
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to delete log");
+      } finally {
+        setDeletingLog(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Delete Log? This will delete your log, likes, and comments on it.')) doDelete();
+    } else {
+      Alert.alert("Delete Log", "This will delete your log, likes, and comments on it.", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: doDelete },
+      ]);
+    }
   };
 
   const openEditLog = () => {
@@ -318,13 +325,13 @@ export default function LogDetailsScreen() {
     const trimmedRating = editRating.trim();
     const parsedRating = trimmedRating ? Number(trimmedRating) : null;
     if (parsedRating != null && (!Number.isFinite(parsedRating) || parsedRating < 0 || parsedRating > 10)) {
-      Alert.alert("Invalid Rating", "Rating must be between 0 and 10.");
+      toast.error("Rating must be between 0 and 10.");
       return;
     }
 
     const parsedDate = new Date(`${editDate.trim()}T12:00:00.000Z`);
     if (!editDate.trim() || Number.isNaN(parsedDate.getTime())) {
-      Alert.alert("Invalid Date", "Use YYYY-MM-DD for the log date.");
+      toast.error("Use YYYY-MM-DD for the log date.");
       return;
     }
 
@@ -356,7 +363,7 @@ export default function LogDetailsScreen() {
       );
       setEditOpen(false);
     } catch (err: any) {
-      Alert.alert("Error", err?.message || "Failed to update log");
+      toast.error(err?.message || "Failed to update log");
     } finally {
       setSavingEdit(false);
     }

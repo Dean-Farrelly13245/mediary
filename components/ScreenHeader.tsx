@@ -70,7 +70,7 @@ export default function ScreenHeader({
   );
 }
 
-const TOP_PAD = Platform.OS === 'web' ? 20 : Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + spacing.sm : 52;
+const TOP_PAD = Platform.OS === 'web' ? 16 : Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + spacing.sm : 52;
 
 const styles = StyleSheet.create({
   container: {
@@ -80,6 +80,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     zIndex: 10,
     elevation: 10,
+    ...(Platform.OS === 'web' ? {
+      // @ts-ignore – web-only sticky positioning
+      position: 'sticky' as any,
+      top: 0,
+      borderBottomWidth: 1,
+      borderBottomColor: '#1E1E35',
+    } : {}),
   },
   row: {
     flexDirection: "row",

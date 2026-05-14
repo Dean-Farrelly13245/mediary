@@ -4,14 +4,16 @@ import { getPostersForActivityEvents, getPostersForInteractions } from "@/servic
 import { getFollowingFeed, getProfilesByIds } from "@/services/social";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Image,
+  Platform,
   RefreshControl,
   Text,
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { SkeletonListRow } from "@/components/Skeleton";
 
 // Normalized activity item type
 type ActivityItem = {
@@ -67,6 +69,8 @@ function getActivityDescription(item: ActivityItem): string {
   }
 }
 
+const HEADER_TOP = Platform.OS === 'web' ? 24 : Platform.OS === 'ios' ? 60 : 40;
+
 // Activity Row Component
 function ActivityRow({ item, onPress }: { item: ActivityItem; onPress: () => void }) {
   const emoji = getTypeEmoji(item.media_type);
@@ -74,7 +78,6 @@ function ActivityRow({ item, onPress }: { item: ActivityItem; onPress: () => voi
   const ratingText = item.rating ? `${item.rating}/10` : "Not rated";
   const dateText = formatDate(item.created_at);
   const userName = item.display_name || item.username || "Someone";
-  const activityDescription = getActivityDescription(item);
 
   const isInteraction = item.type === "like" || item.type === "comment";
 
@@ -173,22 +176,19 @@ export default function Activity() {
       const profiles = await getProfilesByIds(userIds);
 
       // Create a map of profiles
-      const profileMap = {};
+      const profileMap: Record<string, any> = {};
       for (let i = 0; i < profiles.length; i++) {
         profileMap[profiles[i].id] = profiles[i];
       }
 
       // Get poster URLs from media_logs for events that don't have them
       const eventsNeedingPoster = events.filter((e) => !e.poster_url);
-      let posterMap = {};
+      let posterMap: Record<string, string> = {};
 
       if (eventsNeedingPoster.length > 0) {
-        // For likes and comments, we need to find posters differently since the activity user_id
-        // is the liker/commenter, but the log belongs to someone else
         const regularEvents = eventsNeedingPoster.filter(e => e.type === 'log');
         const interactionEvents = eventsNeedingPoster.filter(e => e.type === 'like' || e.type === 'comment');
 
-        // Get posters for regular log events (existing logic)
         if (regularEvents.length > 0) {
           const regularPosterMap = await getPostersForActivityEvents(
             regularEvents.map((e) => ({
@@ -200,7 +200,6 @@ export default function Activity() {
           posterMap = { ...posterMap, ...regularPosterMap };
         }
 
-        // Get posters for likes/comments by finding ANY log with that media
         if (interactionEvents.length > 0) {
           const interactionPosterMap = await getPostersForInteractions(interactionEvents);
           posterMap = { ...posterMap, ...interactionPosterMap };
@@ -244,12 +243,21 @@ export default function Activity() {
     }
   };
 
-  // Loading state
+  // Loading state — skeleton
   if (loading) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" color="#7B3FF2" />
-        <Text className="text-white mt-4">Loading activity...</Text>
+      <View className="flex-1 bg-background">
+        <View style={{ paddingHorizontal: 20, paddingTop: HEADER_TOP, marginBottom: 20 }}>
+          <Text className="text-white font-bold text-3xl">Activity</Text>
+          <Text className="text-zinc-500 text-sm mt-1">Following</Text>
+        </View>
+        <View style={{ paddingHorizontal: 20 }}>
+          <SkeletonListRow />
+          <SkeletonListRow />
+          <SkeletonListRow />
+          <SkeletonListRow />
+          <SkeletonListRow />
+        </View>
       </View>
     );
   }
@@ -258,7 +266,8 @@ export default function Activity() {
   if (error) {
     return (
       <View className="flex-1 bg-background items-center justify-center px-5">
-        <Text className="text-red-400 text-center text-base">
+        <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
+        <Text className="text-red-400 text-center text-base mt-4">
           Couldn't load activity
         </Text>
         <Text className="text-zinc-500 text-center text-sm mt-2">{error}</Text>
@@ -276,15 +285,16 @@ export default function Activity() {
   if (activity.length === 0) {
     return (
       <View className="flex-1 bg-background">
-        <View className="px-5 mt-20">
+        <View style={{ paddingHorizontal: 20, paddingTop: HEADER_TOP, marginBottom: 20 }}>
           <Text className="text-white font-bold text-3xl">Activity</Text>
           <Text className="text-zinc-500 text-sm mt-1">Following</Text>
         </View>
         <View className="flex-1 items-center justify-center px-5">
-          <Text className="text-zinc-500 text-center text-base">
+          <Ionicons name="people-outline" size={48} color="#4B5563" />
+          <Text style={{ color: '#9CA3AF', marginTop: 12, textAlign: 'center', fontSize: 16, fontWeight: '600' }}>
             No activity yet
           </Text>
-          <Text className="text-zinc-600 text-center text-sm mt-2">
+          <Text style={{ color: '#6B7280', marginTop: 6, textAlign: 'center', fontSize: 14 }}>
             Follow people to see their movie, show, and game logs here!
           </Text>
         </View>
@@ -302,7 +312,6 @@ export default function Activity() {
           <ActivityRow
             item={item}
             onPress={() => {
-              // For likes and comments, navigate to the log details using the activity event ID
               router.push(`/log-detail/${item.id}`);
             }}
           />
@@ -312,7 +321,7 @@ export default function Activity() {
         }
         contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={
-          <View className="px-5 mt-20 mb-5">
+          <View style={{ paddingHorizontal: 0, paddingTop: HEADER_TOP, marginBottom: 20 }}>
             <Text className="text-white font-bold text-3xl">Activity</Text>
             <Text className="text-zinc-500 text-sm mt-1">Following</Text>
           </View>

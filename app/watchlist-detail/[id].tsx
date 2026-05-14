@@ -4,6 +4,7 @@ import {
   Alert,
   Image,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -205,24 +206,27 @@ export default function WatchlistDetailScreen() {
     loadMembers();
   };
 
-  // Destructive — keep Alert per audit rules.
+  const doDelete = async () => {
+    const { error } = await supabase.from('watchlists').delete().eq('id', id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success('Watchlist deleted');
+    router.back();
+  };
+
   const handleDelete = () => {
-    Alert.alert('Delete Watchlist', 'This cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          const { error } = await supabase.from('watchlists').delete().eq('id', id);
-          if (error) {
-            toast.error(error.message);
-            return;
-          }
-          toast.success('Watchlist deleted');
-          router.back();
-        },
-      },
-    ]);
+    if (Platform.OS === 'web') {
+      if (window.confirm('Delete Watchlist? This cannot be undone.')) {
+        doDelete();
+      }
+    } else {
+      Alert.alert('Delete Watchlist', 'This cannot be undone.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: doDelete },
+      ]);
+    }
   };
 
   const saveEdits = async () => {

@@ -5,11 +5,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0E0E1C"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -32,12 +32,17 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0E0E1C"
       },
       "package": "com.example.mediary"
     },
     "web": {
-      "favicon": "./assets/icon.png"
+      "favicon": "./assets/icon.png",
+      "name": "Mediary",
+      "shortName": "Mediary",
+      "description": "Track movies, TV shows, and games you love",
+      "themeColor": "#0E0E1C",
+      "backgroundColor": "#0E0E1C"
     },
     "plugins": [
       "expo-router"

@@ -15,8 +15,6 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { searchAllMedia } from '@/services/api';
 import { searchGames } from '@/services/rawg';
-import { parseWatchlistPrompt } from '@/lib/gemini';
-import { fetchWatchlistItems } from '@/lib/watchlistQuery';
 import type { WatchlistItem } from '@/lib/watchlistQuery';
 import { supabase } from '@/services/supabase';
 import AppPressable from '@/components/AppPressable';
@@ -35,9 +33,6 @@ export default function CreateWatchlistScreen() {
   const [searchFilter, setSearchFilter] = useState<'movie' | 'tv' | 'game'>('movie');
 
   const [items, setItems] = useState<WatchlistItem[]>([]);
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiWasUsed, setAiWasUsed] = useState(false);
   const [listName, setListName] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
@@ -122,29 +117,6 @@ export default function CreateWatchlistScreen() {
     setItems((prev) => prev.filter((i) => !(i.id === id && i.media_type === media_type)));
   };
 
-  const generateWithAI = async () => {
-    if (!aiPrompt.trim()) return;
-    setAiLoading(true);
-    try {
-      const parsed = await parseWatchlistPrompt(aiPrompt);
-      const results = await fetchWatchlistItems(parsed);
-
-      setItems((prev) => {
-        const existing = new Set(prev.map((i) => `${i.media_type}-${i.id}`));
-        const newItems = results.filter((r) => !existing.has(`${r.media_type}-${r.id}`));
-        return [...prev, ...newItems];
-      });
-
-      setListName(parsed.suggested_name);
-      setAiWasUsed(true);
-      toast.success(`Added ${results.length} items`);
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to generate watchlist');
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   const saveWatchlist = async () => {
     if (!user) {
       toast.error('Not logged in');
@@ -161,18 +133,12 @@ export default function CreateWatchlistScreen() {
 
     setSaving(true);
     try {
-      const finalDescription = description.trim()
-        ? description.trim()
-        : aiWasUsed && aiPrompt.trim()
-          ? aiPrompt.trim()
-          : null;
-
       const { data: created, error } = await supabase
         .from('watchlists')
         .insert({
           user_id: user.id,
           name: listName.trim(),
-          description: finalDescription,
+          description: description.trim() || null,
           items: items.map((i) => ({
             id: i.id,
             title: i.title,
@@ -327,40 +293,10 @@ export default function CreateWatchlistScreen() {
             </ScrollView>
           )}
 
-          <View className="h-px bg-zinc-800 my-4" />
-
-          <Text className="text-slate-300 font-semibold text-base mb-3">
-            Generate with AI
-          </Text>
-
-          <TextInput
-            className="border border-zinc-700 rounded-xl px-4 py-3 text-white min-h-[80px] mb-3"
-            placeholder="Describe what you want... e.g. 10 horror movies from 2015 to 2020"
-            placeholderTextColor="#71717a"
-            multiline
-            textAlignVertical="top"
-            value={aiPrompt}
-            onChangeText={setAiPrompt}
-          />
-
-          <AppPressable
-            onPress={generateWithAI}
-            disabled={aiLoading || !aiPrompt.trim()}
-            className={`rounded-xl py-3 items-center mb-4 ${
-              aiLoading || !aiPrompt.trim() ? 'bg-zinc-700' : 'bg-primary'
-            }`}
-            accessibilityRole="button"
-            accessibilityLabel="Generate with AI"
-          >
-            {aiLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white font-semibold">Generate</Text>
-            )}
-          </AppPressable>
-
           {items.length > 0 && (
             <>
+              <View className="h-px bg-zinc-800 my-4" />
+
               <Text className="text-slate-300 font-semibold text-base mb-3">
                 Preview ({items.length} items)
               </Text>
@@ -427,6 +363,15 @@ export default function CreateWatchlistScreen() {
                 onChangeText={setDescription}
               />
             </>
+          )}
+
+          {items.length === 0 && !searchQuery.trim() && (
+            <View className="items-center mt-8 px-5">
+              <Ionicons name="list-outline" size={48} color="#4B5563" />
+              <Text style={{ color: '#9CA3AF', marginTop: 12, textAlign: 'center', fontSize: 15 }}>
+                Search for movies, shows, or games and add them to your watchlist
+              </Text>
+            </View>
           )}
         </ScrollView>
 

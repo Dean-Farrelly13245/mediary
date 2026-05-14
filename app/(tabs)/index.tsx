@@ -3,18 +3,27 @@ import { fetchTrendingGames } from "@/services/rawg";
 import { getCachedRecommendations, triggerRecommendationRefresh, RecommendationItem } from "@/services/recommendations";
 import { recEvents } from "@/services/recEvents";
 import useFetch from "@/services/useFetch";
-import { Text, View, ActivityIndicator, FlatList, Image, Pressable, Platform } from "react-native";
+import { Text, View, FlatList, Image, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import MovieCard from "@/components/MovieCard";
 import TvShowCard from "@/components/TvShowCard";
 import RecommendationRow from "@/components/RecommendationRow";
+import SectionHeader from "@/components/SectionHeader";
+import AppPressable from "@/components/AppPressable";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/services/supabase";
+import { card, colors, shadow, spacing } from "@/lib/theme";
 
-const GAME_CARD_WIDTH = Platform.OS === 'web' ? 140 : 120;
-const GAME_POSTER_HEIGHT = Platform.OS === 'web' ? 210 : 170;
+const HEADER_TOP = Platform.OS === 'web' ? 20 : Platform.OS === 'ios' ? 56 : 36;
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 const SECTIONS = [
   'header',
@@ -45,6 +54,7 @@ export default function Index() {
   const [gameRecsLoading, setGameRecsLoading] = useState(true);
   const [totalLogs, setTotalLogs] = useState<number | null>(null);
   const [highRatedTitle, setHighRatedTitle] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -76,6 +86,16 @@ export default function Index() {
         .limit(1);
       if (data && data.length > 0) {
         setHighRatedTitle(data[0].title);
+      }
+
+      // Get display name for greeting
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, username')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (profile) {
+        setDisplayName(profile.display_name || profile.username || null);
       }
     } catch (err) {
       console.log('fetchUserStats error', err);
@@ -114,8 +134,17 @@ export default function Index() {
   const renderSection = ({ item: section }: { item: Section }) => {
     if (section === 'header') {
       return (
-        <View className="px-4" style={{ paddingTop: 16 }}>
-          <Text className="text-primary font-bold text-3xl mt-16 self-center">Mediary</Text>
+        <View style={{ paddingHorizontal: spacing.xl, paddingTop: HEADER_TOP, paddingBottom: spacing.lg }}>
+          {/* Greeting */}
+          {displayName ? (
+            <Text style={{ color: colors.textMuted, fontSize: 14, fontWeight: '500' }}>
+              {getGreeting()}, {displayName}
+            </Text>
+          ) : null}
+          {/* Brand */}
+          <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 30, marginTop: 4, textAlign: displayName ? 'left' : 'center' }}>
+            Mediary
+          </Text>
         </View>
       );
     }
@@ -123,9 +152,37 @@ export default function Index() {
     if (section === 'recs_movies') {
       if (tooFewLogs) {
         return (
-          <View className="mx-5 mb-6 bg-gray-800 rounded-xl p-4">
-            <Text className="text-white font-bold text-base mb-1">Unlock Recommendations</Text>
-            <Text className="text-gray-400 text-sm">Log a few more films or games to unlock personalised recommendations for you.</Text>
+          <View style={{
+            marginHorizontal: spacing.xl,
+            marginBottom: spacing.xl,
+            borderRadius: 16,
+            overflow: 'hidden',
+            backgroundColor: colors.surface,
+            borderWidth: 1,
+            borderColor: colors.border,
+            padding: spacing.lg,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: spacing.md,
+          }}>
+            <View style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: colors.primaryMuted,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Ionicons name="sparkles" size={22} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 15, marginBottom: 2 }}>
+                Unlock Recommendations
+              </Text>
+              <Text style={{ color: colors.textMuted, fontSize: 13 }}>
+                Log a few more films or games to get personalised picks.
+              </Text>
+            </View>
           </View>
         );
       }
@@ -141,11 +198,11 @@ export default function Index() {
     }
 
     if (section === 'trending_movies') {
-      if (moviesLoading) return <ActivityIndicator size="large" color="#7B3FF2" className="mt-10 self-center" />;
+      if (moviesLoading) return <SkeletonRow />;
       if (moviesError) return <Text className="text-red-400 px-5">Error: {moviesError?.message}</Text>;
       return (
         <View className="mb-6">
-          <Text className="text-lg text-white font-bold mb-2 px-5">Trending Movies</Text>
+          <SectionHeader title="Trending Movies" />
           <FlatList
             data={movies}
             renderItem={({ item }) => <MovieCard {...item} />}
@@ -174,11 +231,11 @@ export default function Index() {
     }
 
     if (section === 'trending_tv') {
-      if (tvLoading) return <ActivityIndicator size="large" color="#7B3FF2" className="mt-10 self-center" />;
+      if (tvLoading) return <SkeletonRow />;
       if (tvError) return <Text className="text-red-400 px-5">Error: {tvError?.message}</Text>;
       return (
         <View className="mb-6">
-          <Text className="text-lg text-white font-bold mb-2 px-5">Trending TV Shows</Text>
+          <SectionHeader title="Trending TV Shows" />
           <FlatList
             data={tvShows}
             renderItem={({ item }) => <TvShowCard {...item} />}
@@ -207,11 +264,11 @@ export default function Index() {
     }
 
     if (section === 'trending_games') {
-      if (gamesLoading) return <ActivityIndicator size="large" color="#7B3FF2" className="mt-10 self-center" />;
+      if (gamesLoading) return <SkeletonRow />;
       if (gamesError) return <Text className="text-red-400 px-5">Error: {gamesError?.message}</Text>;
       return (
         <View className="mb-6">
-          <Text className="text-lg text-white font-bold mb-2 px-5">Trending Video Games</Text>
+          <SectionHeader title="Trending Video Games" />
           <FlatList
             data={games}
             horizontal
@@ -221,13 +278,16 @@ export default function Index() {
             className="mt-2"
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <Pressable onPress={() => router.push(`/games/${item.id}`)} style={{ width: GAME_CARD_WIDTH }}>
+              <AppPressable
+                onPress={() => router.push(`/games/${item.id}`)}
+                style={[{ width: card.width }, shadow.cardLight]}
+              >
                 <View style={{ position: 'relative', borderRadius: 12, overflow: 'hidden' }}>
                   <Image
                     source={{ uri: item.background_image }}
-                    style={{ width: GAME_CARD_WIDTH, height: GAME_POSTER_HEIGHT, borderRadius: 12 }}
+                    style={{ width: card.width, height: card.posterHeight, borderRadius: 12 }}
                   />
-                  <Pressable
+                  <AppPressable
                     onPress={(e) => {
                       e.stopPropagation();
                       router.push({
@@ -244,27 +304,27 @@ export default function Index() {
                       position: 'absolute',
                       bottom: 8,
                       right: 8,
-                      backgroundColor: '#7B3FF2',
+                      backgroundColor: colors.primary,
                       borderRadius: 20,
-                      width: 32,
-                      height: 32,
+                      width: card.logBtnSize,
+                      height: card.logBtnSize,
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
                     <Ionicons name="add" size={20} color="white" />
-                  </Pressable>
+                  </AppPressable>
                 </View>
-                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: "white", fontWeight: "700", fontSize: 13, marginTop: 6, width: GAME_CARD_WIDTH }}>
+                <Text numberOfLines={1} ellipsizeMode="tail" style={{ color: colors.text, fontWeight: '700', fontSize: 13, marginTop: 6, width: card.width }}>
                   {item.name}
                 </Text>
-                <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>
+                <Text style={{ color: colors.textDim, fontSize: 12, marginTop: 4 }}>
                   {item.released ? item.released : "Unknown"}
                 </Text>
-              </Pressable>
+              </AppPressable>
             )}
           />
-          <Text style={{ color: "#777", paddingHorizontal: 20 }}>Video game data provided by RAWG.io</Text>
+          <Text style={{ color: colors.textFaint, paddingHorizontal: 20, fontSize: 11, marginTop: 6 }}>Video game data provided by RAWG.io</Text>
         </View>
       );
     }
@@ -302,6 +362,20 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: Platform.OS === 'web' ? 100 : 20 }}
       />
+    </View>
+  );
+}
+
+/** Skeleton placeholder row for loading trending sections */
+function SkeletonRow() {
+  return (
+    <View style={{ marginBottom: spacing.xl, paddingLeft: spacing.xl }}>
+      <View style={{ width: 140, height: 18, borderRadius: 6, backgroundColor: colors.surfaceLight, marginBottom: spacing.md }} />
+      <View style={{ flexDirection: 'row', gap: spacing.md }}>
+        <View style={{ width: card.width, height: card.posterHeight, borderRadius: 12, backgroundColor: colors.surfaceLight }} />
+        <View style={{ width: card.width, height: card.posterHeight, borderRadius: 12, backgroundColor: colors.surfaceLight }} />
+        <View style={{ width: card.width, height: card.posterHeight, borderRadius: 12, backgroundColor: colors.surfaceLight }} />
+      </View>
     </View>
   );
 }

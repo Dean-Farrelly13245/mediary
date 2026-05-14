@@ -153,7 +153,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: number)
 const styles = StyleSheet.create({
   viewport: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 56 : 32,
+    top: Platform.OS === "web" ? 16 : Platform.OS === "ios" ? 56 : 32,
     left: 0,
     right: 0,
     paddingHorizontal: spacing.lg,

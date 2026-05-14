@@ -3,6 +3,9 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 
+const TAB_BAR_HEIGHT = Platform.OS === 'web' ? 56 : 65;
+const BOTTOM_PAD = Platform.OS === 'ios' ? 20 : 8;
+
 export default function Layout() {
   return (
     <Tabs
@@ -12,18 +15,23 @@ export default function Layout() {
         tabBarStyle: {
           backgroundColor: '#0E0E1C',
           borderTopWidth: 1,
-          borderTopColor: '#2633A0', 
-          height: 65,
-          paddingBottom: 8,
+          borderTopColor: '#1E1E35',
+          height: TAB_BAR_HEIGHT,
+          paddingBottom: BOTTOM_PAD,
           paddingTop: 8,
           ...(Platform.OS === 'web' ? {
-            position: 'sticky' as any,
+            position: 'fixed' as any,
             bottom: 0,
-            left: 0,
-            right: 0,
+            left: '50%',
+            // @ts-ignore – web-only
+            transform: 'translateX(-50%)',
+            width: '100%',
+            maxWidth: 430,
             zIndex: 100,
           } : {}),
         },
+        tabBarActiveTintColor: '#7B3FF2',
+        tabBarInactiveTintColor: '#6B7280',
       }}
     >
       {/* Home */}
@@ -33,8 +41,8 @@ export default function Layout() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'home' : 'home-outline'}
-              size={28}
-              color={focused ? '#7B3FF2' : '#B8BBD9'}
+              size={26}
+              color={focused ? '#7B3FF2' : '#6B7280'}
             />
           ),
         }}
@@ -47,8 +55,8 @@ export default function Layout() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'search' : 'search-outline'}
-              size={28}
-              color={focused ? '#7B3FF2' : '#B8BBD9'}
+              size={26}
+              color={focused ? '#7B3FF2' : '#6B7280'}
             />
           ),
         }}
@@ -60,9 +68,9 @@ export default function Layout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <Ionicons
-              name="add"
+              name="add-circle"
               size={34}
-              color={focused ? '#F6B73C' : '#B8BBD9'}
+              color={focused ? '#F6B73C' : '#6B7280'}
             />
           ),
         }}
@@ -75,8 +83,8 @@ export default function Layout() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'time' : 'time-outline'}
-              size={28}
-              color={focused ? '#7B3FF2' : '#B8BBD9'}
+              size={26}
+              color={focused ? '#7B3FF2' : '#6B7280'}
             />
           ),
         }}
@@ -89,8 +97,8 @@ export default function Layout() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'person' : 'person-outline'}
-              size={28}
-              color={focused ? '#7B3FF2' : '#B8BBD9'}
+              size={26}
+              color={focused ? '#7B3FF2' : '#6B7280'}
             />
           ),
         }}

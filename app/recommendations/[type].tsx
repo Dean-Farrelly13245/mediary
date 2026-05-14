@@ -1,9 +1,10 @@
-import { View, Text, ScrollView, Pressable, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, FlatList } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { getCachedRecommendations, RecommendationItem } from '@/services/recommendations';
 import RecommendationCard from '@/components/RecommendationCard';
 import { useAuth } from '@/context/AuthContext';
+import AppPressable from '@/components/AppPressable';
 
 export default function RecommendationsScreen() {
   const { type } = useLocalSearchParams<{ type: string }>();
@@ -50,9 +51,9 @@ export default function RecommendationsScreen() {
   return (
     <View className="flex-1 bg-background">
       <View className="flex-row items-center px-5 mt-14 mb-4">
-        <Pressable onPress={() => router.back()} className="mr-4">
+        <AppPressable onPress={() => router.back()} className="mr-4">
           <Text className="text-purple-400 text-base">← Back</Text>
-        </Pressable>
+        </AppPressable>
         <Text className="text-white text-xl font-bold">{headerTitle}</Text>
       </View>
 
@@ -62,7 +63,7 @@ export default function RecommendationsScreen() {
         className="max-h-12 mb-4"
         contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: 'center' }}
       >
-        <Pressable
+        <AppPressable
           onPress={() => setActiveGenre(null)}
           className={`px-4 py-1.5 rounded-full border ${
             !activeGenre ? 'bg-purple-600 border-purple-600' : 'border-gray-600'
@@ -71,10 +72,10 @@ export default function RecommendationsScreen() {
           <Text className={`text-sm font-medium ${!activeGenre ? 'text-white' : 'text-gray-400'}`}>
             All
           </Text>
-        </Pressable>
+        </AppPressable>
 
         {allGenres.map((g) => (
-          <Pressable
+          <AppPressable
             key={g}
             onPress={() => setActiveGenre(g)}
             className={`px-4 py-1.5 rounded-full border ${
@@ -88,7 +89,7 @@ export default function RecommendationsScreen() {
             >
               {g}
             </Text>
-          </Pressable>
+          </AppPressable>
         ))}
       </ScrollView>
 

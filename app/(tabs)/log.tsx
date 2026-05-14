@@ -8,7 +8,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   ScrollView,
@@ -16,9 +15,11 @@ import {
   TextInput,
   View,
 } from "react-native";
+import StarRating from "@/components/StarRating";
 
 import { useAuth } from "../../context/AuthContext";
 import { searchGames } from "@/services/rawg";
+import { useToast } from "@/context/ToastContext";
 
 type Params = {
   tmdbId?: string;
@@ -46,8 +47,9 @@ const STATUS_OPTIONS = {
 function LogForm({ params }: { params: Params }) {
   const router = useRouter();
   const { user } = useAuth();
+  const toast = useToast();
 
-  const [score, setScore] = useState("");
+  const [score, setScore] = useState(0);
 
   const rawId = params.tmdbId || "";
   const type = (params.mediaType || "movie") as "movie" | "tv" | "game";
@@ -63,29 +65,24 @@ function LogForm({ params }: { params: Params }) {
 
   const saveToLog = async () => {
     if (!user) {
-      Alert.alert("You're not logged in.");
+      toast.error("You're not logged in.");
       return;
     }
 
     if (!rawId) {
-      Alert.alert("Missing ID");
+      toast.error("Missing ID");
       return;
     }
 
     const tmdbId = Number(rawId);
     if (isNaN(tmdbId)) {
-      Alert.alert("Invalid ID format");
+      toast.error("Invalid ID format");
       return;
     }
 
     let ratingParsed: number | undefined = undefined;
-    if (score.trim().length > 0) {
-      const num = Number(score.trim());
-      if (isNaN(num) || num < 0 || num > 10) {
-        Alert.alert("Rating error", "Score must be between 0 and 10.");
-        return;
-      }
-      ratingParsed = num;
+    if (score > 0) {
+      ratingParsed = score;
     }
 
     try {
@@ -101,11 +98,11 @@ function LogForm({ params }: { params: Params }) {
         poster_url: poster || null,
       });
 
-      Alert.alert("Success", "Your log was saved!");
+      toast.success("Your log was saved!");
       router.replace("/log");
     } catch (err: any) {
       console.error("Logging failed:", err);
-      Alert.alert("Failed", err?.message || "Something went wrong.");
+      toast.error(err?.message || "Something went wrong.");
     } finally {
       setSubmitting(false);
     }
@@ -116,7 +113,7 @@ function LogForm({ params }: { params: Params }) {
       <ScrollView
         className="flex-1 px-5"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
         <AppPressable
           onPress={() => router.replace("/log")}
@@ -144,18 +141,11 @@ function LogForm({ params }: { params: Params }) {
         </View>
 
         {/* Rating */}
-        <View className="mb-4">
-          <Text className="text-white font-semibold mb-2">
-            Rating (0–10, optional)
+        <View className="mb-6">
+          <Text className="text-white font-semibold mb-3 text-center">
+            Rating
           </Text>
-          <TextInput
-            className="border border-zinc-700 rounded-xl px-4 py-3 text-white"
-            placeholder="e.g. 8.5"
-            placeholderTextColor="#71717a"
-            keyboardType="numeric"
-            value={score}
-            onChangeText={setScore}
-          />
+          <StarRating value={score} onChange={setScore} />
         </View>
 
         {/* Status  */}
@@ -209,9 +199,11 @@ function LogForm({ params }: { params: Params }) {
             submitting ? "bg-zinc-700" : "bg-primary"
           }`}
         >
-          <Text className="text-white font-semibold text-base">
-            {submitting ? "Saving..." : "Save Log"}
-          </Text>
+          {submitting ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white font-semibold text-base">Save Log</Text>
+          )}
         </AppPressable>
       </ScrollView>
     </View>
@@ -295,6 +287,7 @@ export default function Log() {
                 return (
                   <AppPressable
                     className="items-center"
+                    style={{ width: 110 }}
                     onPress={() =>
                       router.push({
                         pathname: "/log",
@@ -377,7 +370,7 @@ export default function Log() {
                   {anyLoading && (
                     <ActivityIndicator
                       size="large"
-                      color="white"
+                      color="#7B3FF2"
                       className="my-3"
                     />
                   )}
@@ -407,13 +400,16 @@ export default function Log() {
               ListEmptyComponent={
                 !anyLoading && !loadErr && !gamesErr ? (
                   <View className="mt-10 px-5">
-                    <Text className="text-center text-white">
-                      {queryText.trim()
-                        ? filter === "movie"
-                          ? "No movies found"
-                          : "No TV shows found"
-                        : "Search for a Movie, TV Show or Game to log"}
-                    </Text>
+                    <View style={{ alignItems: 'center' }}>
+                      <Ionicons name="add-circle-outline" size={48} color="#4B5563" />
+                      <Text style={{ color: '#9CA3AF', marginTop: 12, textAlign: 'center', fontSize: 15 }}>
+                        {queryText.trim()
+                          ? filter === "movie"
+                            ? "No movies found"
+                            : "No TV shows found"
+                          : "Search for a Movie, TV Show or Game to log"}
+                      </Text>
+                    </View>
                   </View>
                 ) : null
               }
@@ -461,7 +457,7 @@ export default function Log() {
               </View>
 
               {anyLoading && (
-                <ActivityIndicator size="large" color="white" className="my-3" />
+                <ActivityIndicator size="large" color="#7B3FF2" className="my-3" />
               )}
 
               {!anyLoading && queryText.trim() && (
@@ -496,7 +492,7 @@ export default function Log() {
                               },
                             })
                           }
-                          style={{ width: 96 }}
+                          style={{ width: 110 }}
                         >
                           {img ? (
                             <Image
@@ -530,15 +526,21 @@ export default function Log() {
 
               {!anyLoading && !gamesErr && queryText.trim() && (!foundGames || foundGames.length === 0) && (
                 <View className="mt-10 px-5 pb-24">
-                  <Text className="text-center text-white">No games found</Text>
+                  <View style={{ alignItems: 'center' }}>
+                    <Ionicons name="game-controller-outline" size={48} color="#4B5563" />
+                    <Text style={{ color: '#9CA3AF', marginTop: 12, textAlign: 'center' }}>No games found</Text>
+                  </View>
                 </View>
               )}
 
               {!anyLoading && !gamesErr && !queryText.trim() && (
                 <View className="mt-10 px-5 pb-24">
-                  <Text className="text-center text-white">
-                    Search for a Movie, TV Show or Game to log
-                  </Text>
+                  <View style={{ alignItems: 'center' }}>
+                    <Ionicons name="add-circle-outline" size={48} color="#4B5563" />
+                    <Text style={{ color: '#9CA3AF', marginTop: 12, textAlign: 'center' }}>
+                      Search for a Movie, TV Show or Game to log
+                    </Text>
+                  </View>
                 </View>
               )}
 

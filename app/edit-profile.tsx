@@ -153,7 +153,7 @@ export default function EditProfileScreen() {
 
             <AppPressable
               onPress={pickImage}
-              className="px-4 py-2 rounded-full bg-indigo-600"
+              className="px-4 py-2 rounded-full bg-primary"
               accessibilityRole="button"
               accessibilityLabel="Change profile picture"
             >
@@ -189,7 +189,7 @@ export default function EditProfileScreen() {
           <AppPressable
             disabled={saving}
             onPress={handleSave}
-            className="items-center rounded-xl bg-indigo-600 py-3"
+            className="items-center rounded-xl bg-primary py-3"
             accessibilityRole="button"
             accessibilityLabel="Save profile changes"
           >

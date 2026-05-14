@@ -120,4 +120,48 @@ export function SkeletonProfileHeader() {
   );
 }
 
+/**
+ * Hero detail skeleton for movie/TV/game detail screens.
+ * Mimics: full backdrop → overlapping poster + title lines.
+ */
+export function SkeletonHeroDetail() {
+  return (
+    <View>
+      {/* Backdrop area */}
+      <Skeleton width="100%" height={280} borderRadius={0} />
+
+      {/* Poster + title area (overlapping the backdrop) */}
+      <View style={{ flexDirection: "row", paddingHorizontal: spacing.xl, marginTop: -64 }}>
+        <Skeleton width={100} height={150} borderRadius={radius.lg} />
+        <View style={{ flex: 1, marginLeft: spacing.lg, justifyContent: "flex-end" }}>
+          <Skeleton height={22} width="80%" />
+          <Skeleton height={14} width="50%" style={{ marginTop: spacing.sm }} />
+          <Skeleton height={12} width="40%" style={{ marginTop: spacing.sm }} />
+        </View>
+      </View>
+
+      {/* Tab bar placeholder */}
+      <View style={{ flexDirection: "row", paddingHorizontal: spacing.xl, marginTop: spacing.xl, gap: spacing.xl }}>
+        <Skeleton width={60} height={14} />
+        <Skeleton width={40} height={14} />
+        <Skeleton width={40} height={14} />
+      </View>
+
+      {/* Content lines */}
+      <View style={{ paddingHorizontal: spacing.xl, marginTop: spacing.lg }}>
+        <Skeleton height={14} width="100%" style={{ marginTop: spacing.sm }} />
+        <Skeleton height={14} width="90%" style={{ marginTop: spacing.sm }} />
+        <Skeleton height={14} width="70%" style={{ marginTop: spacing.sm }} />
+
+        {/* Genre pills */}
+        <View style={{ flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg }}>
+          <Skeleton width={64} height={24} borderRadius={radius.full} />
+          <Skeleton width={56} height={24} borderRadius={radius.full} />
+          <Skeleton width={72} height={24} borderRadius={radius.full} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 export default Skeleton;

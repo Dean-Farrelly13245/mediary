@@ -1,4 +1,4 @@
-import { View, Image, Text, ScrollView, ActivityIndicator, Modal, Pressable, StyleSheet, Platform } from 'react-native';
+import { View, Image, Text, ScrollView, Modal, Pressable, StyleSheet, Platform } from 'react-native';
 import AppPressable from '@/components/AppPressable';
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import useFetch from '@/services/useFetch';
 import { fetchTVDetails, fetchPersonDetails, TMDB_CONFIG } from '@/services/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import { SkeletonHeroDetail } from '@/components/Skeleton';
+import { colors, gradients, shadow, spacing } from '@/lib/theme';
 
 const TVDetails = () => {
   const { id } = useLocalSearchParams();
@@ -52,8 +54,18 @@ const TVDetails = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" color="#7B3FF2" />
+      <View className="flex-1 bg-background">
+        <AppPressable
+          onPress={() => router.back()}
+          className="absolute left-4 bg-black/60 rounded-full p-2 border border-white/10"
+          hitSlop={16}
+          style={[styles.floatingBackButton, { top: Platform.OS === 'web' ? 24 : 54 }]}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </AppPressable>
+        <SkeletonHeroDetail />
       </View>
     );
   }
@@ -79,7 +91,7 @@ const TVDetails = () => {
         <Ionicons name="arrow-back" size={24} color="white" />
       </AppPressable>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         {/* ===== Hero Backdrop ===== */}
         <View style={{ position: 'relative', width: '100%', height: 280, overflow: 'hidden' }}>
           <Image
@@ -92,7 +104,7 @@ const TVDetails = () => {
             resizeMode="cover"
           />
           <LinearGradient
-            colors={['rgba(0,0,0,0.05)', 'rgba(20,10,40,0.6)', 'rgba(10,10,20,0.95)']}
+            colors={gradients.heroBanner}
             className="absolute bottom-0 left-0 right-0 h-[160px]"
             pointerEvents="none"
           />
@@ -246,6 +258,27 @@ const TVDetails = () => {
         </View>
       </ScrollView>
 
+      {/* ===== Floating Log CTA ===== */}
+      <View style={styles.floatingCTA}>
+        <AppPressable
+          onPress={() => router.push({
+            pathname: '/log',
+            params: {
+              tmdbId: (id as string),
+              mediaType: 'tv',
+              title: show?.name || 'Untitled',
+              posterUrl: show?.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : '',
+            },
+          })}
+          style={[styles.logBtn, shadow.button]}
+          accessibilityRole="button"
+          accessibilityLabel="Log this show"
+        >
+          <Ionicons name="tv" size={22} color="white" />
+          <Text style={styles.logBtnText}>Log This Show</Text>
+        </AppPressable>
+      </View>
+
       {/* ===== Person Modal ===== */}
       <Modal
         visible={personModalVisible}
@@ -380,6 +413,28 @@ const styles = StyleSheet.create({
     zIndex: 100,
     elevation: 100,
   },
+  floatingCTA: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 34 : 20,
+    left: spacing.xl,
+    right: spacing.xl,
+    zIndex: 50,
+    elevation: 50,
+  },
+  logBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  logBtnText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+  },
   personModalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -390,7 +445,7 @@ const styles = StyleSheet.create({
     padding: 24,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: colors.surface,
     zIndex: 2,
     elevation: 2,
   },

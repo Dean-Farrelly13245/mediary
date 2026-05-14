@@ -1,10 +1,9 @@
-import { View, Text, FlatList, Pressable, Animated, Platform } from 'react-native';
+import { View, Text, FlatList, Animated } from 'react-native';
 import { useEffect, useRef } from 'react';
 import RecommendationCard from './RecommendationCard';
+import AppPressable from './AppPressable';
 import { RecommendationItem } from '@/services/recommendations';
-
-const CARD_WIDTH = Platform.OS === 'web' ? 140 : 130;
-const POSTER_HEIGHT = Platform.OS === 'web' ? 210 : 208;
+import { card, colors, spacing } from '@/lib/theme';
 
 interface RecommendationRowProps {
   title: string;
@@ -31,10 +30,10 @@ function SkeletonCard() {
     <Animated.View
       style={{
         opacity,
-        width: CARD_WIDTH,
-        height: POSTER_HEIGHT,
+        width: card.width,
+        height: card.posterHeight,
         borderRadius: 12,
-        backgroundColor: '#374151',
+        backgroundColor: colors.surfaceLight,
         marginRight: 12,
       }}
     />
@@ -54,16 +53,16 @@ export default function RecommendationRow({
   return (
     <View className="mb-6">
       <View className="flex-row items-center justify-between px-5 mb-1">
-        <View style={{ flex: 1, marginRight: 8 }}>
+        <View style={{ flex: 1, marginRight: spacing.sm }}>
           <Text className="text-white text-lg font-bold" numberOfLines={1}>{title}</Text>
           {subtitle ? (
-            <Text className="text-gray-400 text-xs mt-0.5">{subtitle}</Text>
+            <Text style={{ color: colors.textDim, fontSize: 12, marginTop: 2 }}>{subtitle}</Text>
           ) : null}
         </View>
         {onSeeAll ? (
-          <Pressable onPress={onSeeAll}>
-            <Text className="text-purple-400 text-sm font-semibold">See All →</Text>
-          </Pressable>
+          <AppPressable onPress={onSeeAll} hitSlop={8}>
+            <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>See All →</Text>
+          </AppPressable>
         ) : null}
       </View>
 

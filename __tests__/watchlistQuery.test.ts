@@ -1,5 +1,5 @@
 import { fetchWatchlistItems } from '@/lib/watchlistQuery';
-import type { ParsedWatchlistPrompt } from '@/lib/gemini';
+import type { ParsedWatchlistPrompt } from '@/lib/watchlistQuery';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
