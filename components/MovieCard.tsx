@@ -14,7 +14,7 @@ const MovieCard = ({ id, poster_path, title, vote_average, release_date }: Movie
   return (
     <Link href={`/movies/${id}`} asChild>
       <AppPressable
-        style={[{ width: card.width }, shadow.cardLight]}
+        style={{ width: card.width, ...shadow.cardLight }}
         accessibilityRole="button"
         accessibilityLabel={`Open ${title}`}
       >

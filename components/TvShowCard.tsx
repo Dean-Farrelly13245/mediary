@@ -14,7 +14,7 @@ const TvShowCard = ({ id, poster_path, name, vote_average, first_air_date }: TVS
   return (
     <Link href={`/tvshows/${id}`} asChild>
       <AppPressable
-        style={[{ width: card.width }, shadow.cardLight]}
+        style={{ width: card.width, ...shadow.cardLight }}
         accessibilityRole="button"
         accessibilityLabel={`Open ${name}`}
       >
